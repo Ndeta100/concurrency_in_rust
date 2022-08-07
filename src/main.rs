@@ -1,5 +1,5 @@
 use std::{
-    sync::{mpsc, Mutex},
+    sync::{mpsc, Arc, Mutex},
     thread,
     time::Duration,
 };
@@ -32,7 +32,7 @@ fn main() {
             String::from("Hi"),
             String::from("there"),
             String::from("from "),
-            String::from("Github"),
+            String::from("GitHub"),
         ];
         for i in vals {
             tx1.send(i).unwrap();
@@ -63,4 +63,19 @@ fn main() {
         *num = 6;
     }
     println!("m= {:?}", m);
+    //Sharing Mutex<T> between multiple threads
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+        handles.push(handle);
+    }
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    println!("Results: {}", *counter.lock().unwrap());
 }
