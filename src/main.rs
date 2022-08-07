@@ -1,4 +1,4 @@
-use std::{thread, time::Duration};
+use std::{sync::mpsc, thread, time::Duration};
 
 fn main() {
     //Creating a new thread with spawn
@@ -20,4 +20,15 @@ fn main() {
         println!("here's a vector {:?}", v);
     });
     handle_me.join().unwrap();
+    //Using channels to pass messages
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        let val = String::from("Hi Ndeta");
+        tx.send(val).unwrap();
+    });
+    let received = match rx.recv() {
+        Ok(msg) => msg,
+        Err(e) => panic!("Nothing was received, got error {}", e),
+    };
+    println!("Got {}", received);
 }
